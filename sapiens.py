@@ -1,3 +1,5 @@
+import random
+
 class Player(object):
 
 	def __init__(self):
@@ -45,9 +47,8 @@ class Player(object):
 		Returns a two character string from the agents hand of the card to be played
 		into the trick.
 		"""
-
-		#actual logic 
-		pass
+		return random.choice(self.hand)
+		
 
 	def collect_trick(self, lead, winner, trick):
 		"""
@@ -69,6 +70,9 @@ class Player(object):
 def main():
 	p = Player();
 	print(p.get_name())
+	p.new_hand(["player1", "player2", "player3", p.get_name()])
+	p.add_cards_to_hand(["SA", "C8", "DQ", "S7", "HJ", "HK", "S5", "D5", "S8", "D2", "H9", "C10", "CQ"])
+	print(p.play_card("player1", ['SQ', 'C2', 'DA']))
 
 if __name__ == '__main__':
 	main()
