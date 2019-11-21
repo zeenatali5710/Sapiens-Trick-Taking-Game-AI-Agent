@@ -47,7 +47,23 @@ class Player(object):
 		Returns a two character string from the agents hand of the card to be played
 		into the trick.
 		"""
-		return random.choice(self.hand)
+		suit = ""
+		playCard = random.choice(self.hand)
+		if (len(trick) > 0):
+			suit = trick[0][0]
+			res = [card for card in self.hand if card[0].lower() == suit.lower()]
+			if (len(res) == 0):
+				playCard = random.choice(self.hand)
+			else:
+				playCard = random.choice(res)
+		else:
+			ace = [card for card in self.hand if card[1] == 'A']
+			if (len(ace) == 0):
+				playCard = random.choice(self.hand)
+			else:
+				playCard = random.choice(ace)
+
+		return playCard
 		
 
 	def collect_trick(self, lead, winner, trick):
@@ -71,8 +87,10 @@ def main():
 	p = Player();
 	print(p.get_name())
 	p.new_hand(["player1", "player2", "player3", p.get_name()])
-	p.add_cards_to_hand(["SA", "C8", "DQ", "S7", "HJ", "HK", "S5", "D5", "S8", "D2", "H9", "C10", "CQ"])
-	print(p.play_card("player1", ['SQ', 'C2', 'DA']))
+	p.add_cards_to_hand(["C9", "C8", "DQ", "H10", "HJ", "HK", "C5", "D5", "H5", "D2", "H9", "C10", "CQ"])
+	#print(p.play_card("player1", ['SQ', 'C2', 'DA']))
+	print(p.play_card("player1", ["HA"]))
+	#p.play_card("player1", ['SA', "C6", "SQ"])
 
 if __name__ == '__main__':
 	main()
