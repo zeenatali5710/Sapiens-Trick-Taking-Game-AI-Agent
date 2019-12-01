@@ -9,6 +9,55 @@ from itertools import groupby
 from itertools import product
 from pydealer import ( Card, Deck, Stack)
 
+'''
+Reference: https://github.com/nihalsoans91/Multi-Agent-Alternating-Turn-Board-and-Card-Games
+
+Approach description:
+Using the Q-learning algorithm, which uses the Bellman equation to choose the best card 
+while playing the game of Spades.
+
+For our agent, we define the following
+environment: cards on the table i.e the current trick
+state      : list of cards in hand
+action_list: list of legal cards which can be played
+action     : card played by the agent from action list
+
+An 'action' causes a change in the agent 'environment' and 'state'.
+When a card is played, it is removed from the current hand and hence state changes.
+
+This is a model-free approach of reinforcement learning where agent updates its 
+q-values and selects the best card which would make him win the trick.
+
+We are using the sorting API provided by the pydealer module, cards are sorted according 
+to the rank of their suit and card-value.
+
+Q-dictionary:
+key   : hand | action
+value : qValue calculated using the Bellman equation
+
+Q-Policy:
+key   : trick | hand
+value : action which is the card to be played
+
+Parameters for Bellman equation:
+
+1. reward : calculated based on action
+   for each action in action list, 
+    if that action causes agent to win the trick, then reward = 50
+    else reward = -10
+
+2. learning rate(alpha): 0.01
+
+3. gamma               : 0.8
+
+4. next Q-value for Bellman equation is taken from the Q-dictionary.
+
+
+Policy:
+The card having maximum q-Value is selected
+
+'''
+
 class Player(object):
     
     def __init__(self):
@@ -155,7 +204,7 @@ class Player(object):
     def updatePolicy(self, trick):
         for key in self.q_dict.keys():
             k = key.split('|')
-            print("key: ", k)
+            #print("key: ", k)
             e = ('-').join(trick)
             h = k[0]
             a = k[1]
@@ -186,7 +235,7 @@ class Player(object):
 
             reward = self.get_reward(trick,action) 
             self.q_value = self.q_value  + self.alpha*(reward + self.gamma * max(self.nextQvalue(self.hand,a) for a in actions) - self.q_value)
-            print("Qvalue: ", self.q_value)
+            #print("Qvalue: ", self.q_value)
             self.q_dict[key] = self.q_value
 
         #print("q_dict: ", self.q_dict)
@@ -195,7 +244,7 @@ class Player(object):
         self.updatePolicy(trick)
         
         playCard = self.q_policy['-'.join(trick) + "|" + '-'.join(self.hand)]
-        #print("played card is: ", playCard)
+        print("played card is: ", playCard)
         self.hand.remove(playCard)
         json.dump(self.q_dict, open(self.qfilename, 'w'))
         json.dump(self.q_policy, open(self.pfilename, 'w'))
@@ -212,40 +261,31 @@ class Player(object):
 
 def main():
     p = Player();
-    print(p.get_name())
     p.new_hand(["player1", "player2", "player3", p.get_name()])
     p.add_cards_to_hand(["DJ", "DQ", "DK", "DA", "HJ", "HK", "HQ", "HA", "CJ", "SK", "SQ", "CA", "SA"])
+
     hand2 = p.get_hand().copy()
     #print(p.get_hand())
     #print(p.play_card("player1", ['SQ', 'C2', 'DA']))
-    
-    card = p.play_card("player1", ["HA"])
-    print("played card: ", card)
-    
-#    l = ["HA", card, "H2", "H3"]
-#    p.collect_trick("player1", "player1", l)
-    
-#     print(p.deck)
-#     print(p.deck.get_list(["Queen of Hearts"]))
-#     print(p.deck[25])
-    
-#     card = p.play_card("player3", ["H7", "C2", "D4"])
-#     l = ["D9", "C2", "D4", card]
-#     p.collect_trick("player3", "player1", l)
-    
-#     print(p.play_card("player4", ["CJ", "CA"]))
-#     l = ["CJ", "CA", card, "C2"]
-#     p.collect_trick("player4", "Sapiens",  l)
 
-#     print("\n")
-#     print("\n")
+    card = p.play_card("player1", ["H4"])
+    l = ["H4", card, "H2", "H3"]
+    p.collect_trick("player1", "player1", l)
+    
+    # print(p.deck)
+    # print(p.deck.get_list(["Queen of Hearts"]))
+    # print(p.deck[25])
+    
+    card = p.play_card("player3", ["H7", "C2", "D4"])
+    l = ["D9", "C2", "D4", card]
+    p.collect_trick("player3", "player1", l)
+    
+    print(p.play_card("player4", ["CQ", "C2"]))
+    l = ["CQ", "C2", card, "C3"]
+    p.collect_trick("player4", "Sapiens",  l)
 
-#     print(str(p.curr_state).replace(', ',',\n '))
-
-#     print("\n")
-#     print("\n")
-#     print("initial hand is: ", hand2)
-#     print("current hand is: ", p.get_hand())
+    print("initial hand is: ", hand2)
+    print("current hand is: ", p.get_hand())
 
 if __name__ == '__main__':
     main()
